@@ -62,10 +62,14 @@
 #include "youngdsr-options.h"
 #include "youngdsr-rcache.h"
 
+#define fname ”romn.txt”;
+
 u_int32_t sendACKcount = 0;
 u_int32_t malicious = 7;
 u_int32_t dropcount = 0;
 double perc = 0.25;
+
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("YoungdsrOptions");
