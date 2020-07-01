@@ -1146,7 +1146,7 @@ bool YoungdsrRouting::PromiscReceive (Ptr<NetDevice> device, Ptr<const Packet> p
                         " and packet : " << *pktMinusYoungdsrHdr);
 
 
-std::cout << Simulator::Now ().GetMicroSeconds () <<
+/*std::cout << Simulator::Now ().GetMicroSeconds () <<
               " DSR node " << m_mainAddress <<
               " overhearing packet PID: " << pktMinusIpHdr->GetUid () <<
               " from " << promiscSource <<
@@ -1154,7 +1154,7 @@ std::cout << Simulator::Now ().GetMicroSeconds () <<
               " with source IP " << ipv4Header.GetSource () <<
               " and destination IP " << ipv4Header.GetDestination () <<
               " and packet : " << *pktMinusYoungdsrHdr << '\n';
-
+*/
           bool isPromisc = true;                     // Set the boolean value isPromisc as true
           youngdsrOption->Process (pktMinusIpHdr, pktMinusYoungdsrHdr, m_mainAddress, source, ipv4Header, nextHeader, isPromisc, promiscSource);
           return true;

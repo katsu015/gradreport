@@ -67,6 +67,7 @@
 u_int32_t sendACKcount = 0;
 u_int32_t malicious = 7;
 u_int32_t dropcount = 0;
+u_int32_t sendtomcount = 0;
 double perc = 0.25;
 
 
@@ -1457,6 +1458,7 @@ uint8_t YoungdsrOptionSR::GetOptionNumber () const
 
 uint8_t YoungdsrOptionSR::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, Ipv4Address ipv4Address, Ipv4Address source, Ipv4Header const& ipv4Header, uint8_t protocol, bool& isPromisc, Ipv4Address promiscSource)
 {
+  ofstream outputfile(fname);
   NS_LOG_FUNCTION (this << packet << youngdsrP << ipv4Address << source << ipv4Address << ipv4Header << (uint32_t)protocol << isPromisc);
   Ptr<Packet> p = packet->Copy ();
   // ルーターのアドレスフィールドの数を取得する
@@ -1487,6 +1489,12 @@ uint8_t YoungdsrOptionSR::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, Ip
 
   // ノードリストの宛先を取得する
   Ipv4Address destination = nodeList.back ();
+  // mノードへの送信を検知
+  /*  if (destination == "0.0.0.8")
+  {
+
+  }
+  */
   /*
    * 無差別受信データパケットの場合、
     * 1.自動ルート短縮が可能かどうかを確認する
@@ -1552,6 +1560,8 @@ uint8_t YoungdsrOptionSR::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, Ip
       if (GetIDfromIP(ipv4Address) == malicious) {
         /* code */
       //  std::cout << "Mノードが受信" << '\n';
+      outputfile<< "Mノードへsendした回数" << sendtomcount++ << '\n';
+
       }
 
       /*
