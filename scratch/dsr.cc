@@ -36,16 +36,20 @@
 #include "ns3/config-store-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/youngdsr-module.h"
+#include "ns3/dsr-module.h"
 #include <sstream>
+
+#include "ns3/netanim-module.h"
+
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("YoungdsrTest");
+NS_LOG_COMPONENT_DEFINE ("dsrTest");
 
 int
 main (int argc, char *argv[])
 {
+      std::string animFile = "dsranim.xml";
   //
   // Users may find it convenient to turn on explicit debugging
   // for selected modules; the below lines suggest how to do this
@@ -77,7 +81,7 @@ main (int argc, char *argv[])
 
   // General parameters
   uint32_t nWifis = 50;
-  uint32_t nSinks = 10;
+  uint32_t nSinks = /*10*/5;
   double TotalTime = 600.0;
   double dataTime = 500.0;
   double ppers = 1;
@@ -92,6 +96,7 @@ main (int argc, char *argv[])
   std::string rate = "0.512kbps";
   std::string dataMode ("DsssRate11Mbps");
   std::string phyMode ("DsssRate11Mbps");
+  std::string rtslimit = "0";
 
   //Allow users to override the default parameters and set it to new ones from CommandLine.
   CommandLine cmd;
@@ -104,8 +109,8 @@ main (int argc, char *argv[])
   cmd.AddValue ("pauseTime", "pauseTime for mobility model, Default: 0", pauseTime);
   cmd.Parse (argc, argv);
 
-  SeedManager::SetSeed (10);
-  SeedManager::SetRun (1);
+  SeedManager::SetSeed (3);
+  SeedManager::SetRun (5);
 
   NodeContainer adhocNodes;
   adhocNodes.Create (nWifis);
@@ -113,7 +118,7 @@ main (int argc, char *argv[])
 
   NS_LOG_INFO ("setting the default phy and channel parameters");
   Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode", StringValue (phyMode));
-  Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue ("2200"));
+  Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue (/*"2200"*/rtslimit));
   // disable fragmentation for frames below 2200 bytes
   Config::SetDefault ("ns3::WifiRemoteStationManager::FragmentationThreshold", StringValue ("2200"));
 
@@ -138,7 +143,7 @@ main (int argc, char *argv[])
   NS_LOG_INFO ("Configure Tracing.");
 
   AsciiTraceHelper ascii;
-  Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream ("youngdsrtest.tr");
+  Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream ("dsrtest.tr");
   wifiPhy.EnableAsciiAll (stream);
 
   MobilityHelper adhocMobility;
@@ -167,10 +172,10 @@ main (int argc, char *argv[])
   adhocMobility.Install (adhocNodes);
 
   InternetStackHelper internet;
-  YoungdsrMainHelper youngdsrMain;
-  YoungdsrHelper youngdsr;
+  DsrMainHelper dsrMain;
+  DsrHelper dsr;
   internet.Install (adhocNodes);
-  youngdsrMain.Install (youngdsr, adhocNodes);
+  dsrMain.Install (dsr, adhocNodes);
 
   NS_LOG_INFO ("assigning ip address");
   Ipv4AddressHelper address;
@@ -199,9 +204,17 @@ main (int argc, char *argv[])
       apps1.Stop (Seconds (dataTime + i * randomStartTime));
     }
 
+    AnimationInterface anim(animFile);
+    for (uint32_t i = 0; i < nWifis; ++i)
+      {
+        anim.UpdateNodeSize(i,10,10);
+      }
+      anim.EnablePacketMetadata();
+
+      anim.EnableIpv4L3ProtocolCounters(Seconds(0),Seconds(600));
+
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Stop (Seconds (TotalTime));
   Simulator::Run ();
   Simulator::Destroy ();
 }
-

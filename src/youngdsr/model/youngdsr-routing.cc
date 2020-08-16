@@ -79,8 +79,12 @@
 u_int32_t mcorrect = 0;
 u_int32_t correctc = 0;
 u_int32_t m_malicious = 7;
+u_int32_t m_malicious2 = 8;
+u_int32_t m_malicious3 = 9;
 u_int32_t mfailed = 0;
 u_int32_t failedR = 0;
+
+std::ofstream outputfile(fname);
 
 namespace ns3 {
 
@@ -1600,6 +1604,8 @@ YoungdsrRouting::AddAckReqHeader (Ptr<Packet>& packet, Ipv4Address nextHop)
   uint8_t buf[2];
   tmpP->CopyData (buf, sizeof(buf));
   uint8_t numberAddress = (buf[1] - 2) / 4;
+  outputfile << numberAddress <<  "\n" ;
+
   YoungdsrOptionSRHeader sourceRoute;
   sourceRoute.SetNumberAddress (numberAddress);
   tmpP->RemoveHeader (sourceRoute);               // this is a clean packet without any youngdsr involved headers
@@ -3435,10 +3441,11 @@ YoungdsrRouting::Receive (Ptr<Packet> p,
         std::cout << "残念！" << mfailed << '\n';
       }
 
-      if (GetIDfromIP(m_mainAddress) == 23) {
+      /***if (GetIDfromIP(m_mainAddress) == 23) {
         failedR++;
         std::cout << "普通のノード" << failedR << '\n';
       }
+      ***/
       youngdsrOption = GetOption (optionType);
       optionLength = youngdsrOption->Process (p, packet, m_mainAddress, source, ip, protocol, isPromisc, promiscSource);
 

@@ -21,6 +21,8 @@
  */
 
 #include <iostream>
+#include <fstream>
+
 #include "ns3/simulator.h"
 #include "ns3/log.h"
 #include "ns3/socket.h"
@@ -42,8 +44,15 @@
 #include "wifi-net-device.h"
 
 
+
 #undef NS_LOG_APPEND_CONTEXT
 #define NS_LOG_APPEND_CONTEXT std::clog << "[mac=" << m_self << "] "
+
+#define fname "romn.txt"
+
+
+using namespace std;
+std::ofstream outputfile(fname);
 
 namespace ns3 {
 
@@ -146,6 +155,8 @@ u_int32_t RTScount2 = 0;
 u_int32_t CTScount2 = 0;
 u_int32_t RTScount3 = 0;
 u_int32_t CTScount3 = 0;
+u_int32_t RTScount4 = 0;
+u_int32_t RTScount5 = 0;
 /* static */
 TypeId
 MacLow::GetTypeId (void)
@@ -695,6 +706,7 @@ MacLow::NotifyOffNow (void)
 void
 MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, bool ampduSubframe)
 {
+  //std::ofstream outputfile(fname);
   NS_LOG_FUNCTION (this << packet << rxSnr << txVector.GetMode () << txVector.GetPreambleType ());
   /* A packet is received from the PHY.
    * When we have handled this packet,
@@ -753,7 +765,8 @@ MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, bool
         }
 
       NS_LOG_DEBUG ("received cts from=" << m_currentHdr.GetAddr1 ());
-      if ("00:00:00:00:00:10" == m_currentHdr.GetAddr1 ()) {
+      //normal node
+    /*  if ("00:00:00:00:00:10" == m_currentHdr.GetAddr1 ()) {
         CTScount++;
         std::cout <<"macLow:cts:id:15 " << CTScount << '\n';
 
@@ -763,9 +776,20 @@ MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, bool
         std::cout <<"macLow:cts:id:31 " << CTScount2 << '\n';
 
       }
+      */
+      //マックアドレスは１０進数に変換してマイナス１でID
+
+      if ("00:00:00:00:00:28" == m_currentHdr.GetAddr1 ()) {
+        CTScount2++;
+        std::cout <<"macLow:cts:id:39 " << CTScount2 << '\n';
+
+      }
+
       if ("00:00:00:00:00:08" == m_currentHdr.GetAddr1 ()) {
         CTScount3++;
-        std::cout <<"macLow:cts:id:7 " << CTScount3 << '\n';
+        outputfile <<"macLow:cts:id:7 From " << hdr.GetAddr2 () << " at " << Simulator::Now ().GetMicroSeconds () <<"\n";
+        outputfile  << CTScount3 <<"\n";
+      //  outputfile.close();
 
       }
 
@@ -1103,6 +1127,7 @@ rxPacket:
   packet->RemoveTrailer (fcs);
   m_rxCallback (packet, &hdr);
   return;
+//outputfile.close();
 }
 
 uint32_t
@@ -1576,7 +1601,12 @@ MacLow::BlockAckTimeout (void)
 void
 MacLow::SendRtsForPacket (void)
 {
+  //std::ofstream outputfile(fname);
   //std::cout << "SendRtsForPacket" << '\n';
+  /*
+  *normaln nodes
+  */
+  /*
   if ("00:00:00:00:00:10" == m_currentHdr.GetAddr1 ()) {
     std::cout << "countRTS:id:15" << '\n';
     RTScount++;
@@ -1587,10 +1617,35 @@ MacLow::SendRtsForPacket (void)
     RTScount2++;
     std::cout << RTScount2 << '\n';
   }
+  */
+  if ("00:00:00:00:00:28" == m_currentHdr.GetAddr1 ()) {
+    std::cout << "countRTS:id:39" << '\n';
+    RTScount2++;
+    std::cout << RTScount2 << '\n';
+  }
   if ("00:00:00:00:00:08" == m_currentHdr.GetAddr1 ()) {
-    std::cout << "countRTS:id:7" << '\n';
+    //std::cout << "countRTS:id:7" << '\n';
+    outputfile << "\ncountRTS:id:7 from "<< m_self << " at "<< Simulator::Now ().GetMicroSeconds () <<"\n";
     RTScount3++;
-    std::cout << RTScount3 << '\n';
+  //  std::cout << RTScount3 << '\n';
+  outputfile << RTScount3 <<"\n";
+//outputfile.close();
+  }
+  if ("00:00:00:00:00:29" == m_currentHdr.GetAddr1 ()) {
+    //std::cout << "countRTS:id:7" << '\n';
+    outputfile << "\ncountRTS:id:40 from "<< m_self << " at "<< Simulator::Now ().GetMicroSeconds () <<"\n";
+    RTScount4++;
+  //  std::cout << RTScount3 << '\n';
+  outputfile << RTScount4 <<"\n";
+//outputfile.close();
+  }
+  if ("00:00:00:00:00:02" == m_currentHdr.GetAddr1 ()) {
+    //std::cout << "countRTS:id:7" << '\n';
+    outputfile << "\ncountRTS:id:1 from "<< m_self << " at "<< Simulator::Now ().GetMicroSeconds () <<"\n";
+    RTScount5++;
+  //  std::cout << RTScount3 << '\n';
+  outputfile << RTScount5 <<"\n";
+//outputfile.close();
   }
   NS_LOG_FUNCTION (this);
   /* send an RTS for this packet. */
@@ -1649,6 +1704,7 @@ MacLow::SendRtsForPacket (void)
   AddWifiMacTrailer (packet);
 
   ForwardDown (packet, &rts, rtsTxVector);
+//  outputfile.close();
 }
 
 void

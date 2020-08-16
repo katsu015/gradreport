@@ -50,8 +50,21 @@ intToPoint.EnablePcapAll ("myfirs");
 */
 
 using namespace ns3;
-
+using namespace std;
+/**
+#define fname "romn.txt"
+std::ofstream outputfile(fname);
+**/
 NS_LOG_COMPONENT_DEFINE ("DsrTest");
+/*
+void
+CourseChange (std::string context, Ptr<const MobilityModel> model)
+{
+  Vector position = model->GetPosition();
+  NS_LOG_UNCOND(context <<
+  " x = " << position.x << ", y = " << position.y);
+}
+*/
 
 int
 main (int argc, char *argv[])
@@ -138,7 +151,7 @@ LogComponentEnable ("YoungdsrNetworkQueue", LOG_LEVEL_ALL);
   cmd.AddValue ("rtslimit", "RTS/CTS Threshold (bytes)", rtslimit);
   cmd.Parse (argc, argv);
 
-  SeedManager::SetSeed (9);
+  SeedManager::SetSeed (3);
   SeedManager::SetRun (5);
 
   NodeContainer adhocNodes;
@@ -172,8 +185,8 @@ LogComponentEnable ("YoungdsrNetworkQueue", LOG_LEVEL_ALL);
   NS_LOG_INFO ("Configure Tracing.");
 
   AsciiTraceHelper ascii;
-  Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream ("dsrtest.tr");
-  wifiPhy.EnableAsciiAll (stream);
+  //Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream ("dsrtest.tr");
+  //wifiPhy.EnableAsciiAll (stream);
 
   MobilityHelper adhocMobility;
   ObjectFactory pos;
@@ -252,7 +265,17 @@ LogComponentEnable ("YoungdsrNetworkQueue", LOG_LEVEL_ALL);
 
 
   //pointToPoint.EnablePcapAll ("dsrtest");
+  /*
+std::ostringstream oss;
+oss <<
+"/NodeList/" << wifiStaNodes.Get(nWifis - 1)->GetId() <<
+"/$ns3::MobilityModel/CourseChange";
+
+
+Config::Connect(oss.str(), MakeCallback (&CourseChange));
+*/
 
   Simulator::Run ();
+  //outputfile << "/finalroute/" << '\n';
   Simulator::Destroy ();
 }

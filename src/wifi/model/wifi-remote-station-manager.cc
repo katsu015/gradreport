@@ -987,7 +987,7 @@ void
 WifiRemoteStationManager::ReportDataFailed (Mac48Address address, const WifiMacHeader *header,
                                             uint32_t packetSize)
 {
-  std::cout << "/* ReportDataFailed */" << '\n';
+  //std::cout << "/* ReportDataFailed */" << '\n';
   NS_LOG_FUNCTION (this << address << *header);
   NS_ASSERT (!address.IsGroup ());
   WifiRemoteStation *station = Lookup (address, header);

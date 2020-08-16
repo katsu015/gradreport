@@ -36,7 +36,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/config-store-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/youngdsr-module.h"
+//#include "ns3/youngdsr-module.h"
 #include "ns3/dsr-module.h"
 #include "ns3/yans-wifi-helper.h"
 
@@ -131,8 +131,8 @@ LogComponentEnable ("YoungdsrNetworkQueue", LOG_LEVEL_ALL);
   cmd.AddValue ("rtslimit", "RTS/CTS Threshold (bytes)", rtslimit);
   cmd.Parse (argc, argv);
 
-  SeedManager::SetSeed (10);
-  SeedManager::SetRun (2);
+  SeedManager::SetSeed (8);
+  SeedManager::SetRun (5);
 
   NodeContainer adhocNodes;
   adhocNodes.Create (nWifis);
@@ -194,9 +194,10 @@ LogComponentEnable ("YoungdsrNetworkQueue", LOG_LEVEL_ALL);
   adhocMobility.Install (adhocNodes);
 
   InternetStackHelper internet;
-  YoungdsrMainHelper dsrMain;
-  //DsrHelper dsr;
-  YoungdsrHelper dsr;
+  //YoungdsrMainHelper dsrMain;
+  DsrMainHelper dsrMain;
+  DsrHelper dsr;
+  //YoungdsrHelper dsr;
   internet.Install (adhocNodes);
   dsrMain.Install (dsr, adhocNodes);
 

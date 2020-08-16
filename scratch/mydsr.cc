@@ -105,6 +105,7 @@ int main (int argc, char *argv[])
   std::string rate = "0.512kbps";
   std::string dataMode ("DsssRate11Mbps");
   std::string phyMode ("DsssRate11Mbps");
+  std::string rtslimit = "0";
 
   //Allow users to override the default parameters and set it to new ones from CommandLine.
   CommandLine cmd;
@@ -115,10 +116,11 @@ int main (int argc, char *argv[])
   cmd.AddValue ("packetSize", "The packet size", packetSize);
   cmd.AddValue ("txpDistance", "Specify node's transmit range, Default:300", txpDistance);
   cmd.AddValue ("pauseTime", "pauseTime for mobility model, Default: 0", pauseTime);
+  cmd.AddValue ("rtslimit", "RTS/CTS Threshold (bytes)", rtslimit);
   cmd.Parse (argc, argv);
 
-  SeedManager::SetSeed (10);
-  SeedManager::SetRun (1);
+  SeedManager::SetSeed (8);
+  SeedManager::SetRun (5);
 
   NodeContainer adhocNodes;
   adhocNodes.Create (nWifis);
@@ -126,7 +128,7 @@ int main (int argc, char *argv[])
 
   NS_LOG_INFO ("setting the default phy and channel parameters");
   Config::SetDefault ("ns3::WifiRemoteStationManager::NonUnicastMode", StringValue (phyMode));
-  Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue ("2200"));
+  Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue ("rtslimit"));
   // disable fragmentation for frames below 2200 bytes
   Config::SetDefault ("ns3::WifiRemoteStationManager::FragmentationThreshold", StringValue ("2200"));
 
