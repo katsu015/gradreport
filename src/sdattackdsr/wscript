@@ -1,0 +1,50 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('sdattackdsr', ['internet', 'wifi'])
+    module.includes = '.'
+    module.source = [
+        'model/sdattackdsr-routing.cc',
+        'model/sdattackdsr-options.cc',
+        'model/sdattackdsr-fs-header.cc',
+        'model/sdattackdsr-option-header.cc',
+        'model/sdattackdsr-maintain-buff.cc',
+        'model/sdattackdsr-passive-buff.cc',
+        'model/sdattackdsr-rsendbuff.cc',
+        'model/sdattackdsr-rcache.cc',
+        'model/sdattackdsr-rreq-table.cc',
+        'model/sdattackdsr-gratuitous-reply-table.cc',
+        'model/sdattackdsr-errorbuff.cc',
+        'model/sdattackdsr-network-queue.cc',
+        'helper/sdattackdsr-helper.cc',
+        'helper/sdattackdsr-main-helper.cc',
+        ]
+        
+    module_test = bld.create_ns3_module_test_library('sdattackdsr')
+    module_test.source = [
+        'test/sdattackdsr-test-suite.cc',
+        ]
+        
+    headers = bld(features='ns3header')
+    headers.module = 'sdattackdsr'
+    headers.source = [
+        'model/sdattackdsr-routing.h',
+        'model/sdattackdsr-options.h',
+        'model/sdattackdsr-fs-header.h',
+        'model/sdattackdsr-option-header.h',
+        'model/sdattackdsr-maintain-buff.h',
+        'model/sdattackdsr-passive-buff.h',
+        'model/sdattackdsr-rsendbuff.h',
+        'model/sdattackdsr-rcache.h',
+        'model/sdattackdsr-rreq-table.h',
+        'model/sdattackdsr-gratuitous-reply-table.h',
+        'model/sdattackdsr-errorbuff.h',
+        'model/sdattackdsr-network-queue.h',
+        'helper/sdattackdsr-helper.h',
+        'helper/sdattackdsr-main-helper.h',
+        ]
+
+    if (bld.env['ENABLE_EXAMPLES']):
+      bld.recurse('examples')
+
+    bld.ns3_python_bindings()

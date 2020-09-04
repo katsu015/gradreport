@@ -518,6 +518,7 @@ uint8_t YoungdsrOptionRreq::GetOptionNumber () const
 
 uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, Ipv4Address ipv4Address, Ipv4Address source, Ipv4Header const& ipv4Header, uint8_t protocol, bool& isPromisc, Ipv4Address promiscSource)
 {
+
   //悪意のあるノードの設定
   u_int32_t malicious = 7;
   //RREQが送信されてるかチェック
@@ -555,6 +556,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
   uint8_t buf[2];
   p->CopyData (buf, sizeof(buf));
   uint8_t numberAddress = (buf[1] - 6) / 4;
+    outputfile <<" numberaddress "<< (uint32_t)numberAddress <<  "\n" ;
 
   NS_LOG_DEBUG ("The number of Ip addresses " << (uint32_t)numberAddress);
   if (numberAddress >= 255)
@@ -673,7 +675,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
       NS_LOG_DEBUG ("The target address over here " << targetAddress << " and the ip address " << ipv4Address << " and the source address " << mainVector[0]);
       //std::cout <<"mainvectorr" <<mainVector[0] << '\n';
       //偽造RREPの生成と送信
-/*****
+
       if (GetIDfromIP (ipv4Address) == malicious)
       {
         Ipv4Address nextHop; // 使用するネクストホップアドレスを宣言する
@@ -691,15 +693,15 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
           {
             std::vector<Ipv4Address> changeRoute (nodeList);
             changeRoute.push_back (ipv4Address);    // 自分の住所を押し戻す
-*****/
+
 /*
             for(int i =0; i < (int)changeRoute.size();i++){
               std::cout << changeRoute[i] <<"\n";
             }
 */
-/****
+
             m_finalRoute.clear ();              // 明確なルートベクトルを取得する
-            ****/
+
             /*
             std::cout << "Mノード：偽ルートを作成" << '\n';
             std::cout << "ソースノードは　" << mainVector[0] << '\n';
@@ -708,15 +710,15 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
             std::cout << "/-----偽ルート-----/" << '\n';
             */
 
-/****
+
             for (std::vector<Ipv4Address>::iterator i = changeRoute.begin (); i != changeRoute.end (); ++i)
               {
               //  std::cout << *i << '\n';
-              ****/
+
                 /*悪意のあるノードから宛先ノードまでを省略した偽RREPを作成する
                 */
 
-                /****
+
                   m_finalRoute.push_back (*i);
 
 
@@ -731,7 +733,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
                 outputfile << *i << '\n';
               }
             PrintVector (m_finalRoute);
-            *****/
+
             /*
             std::cout << "/----------/" << '\n';
 
@@ -741,7 +743,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
 
             std::cout << "/--------/" << '\n';
             */
-/****
+
             nextHop = ReverseSearchNextHop (ipv4Address, m_finalRoute); // get the next hop
           }
 
@@ -749,13 +751,13 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
         rrep.SetNodesAddress (m_finalRoute);     // ルート応答ヘッダーにノードアドレスを設定します
         NS_LOG_DEBUG ("The nextHop address " << nextHop);
         Ipv4Address replyDst = m_finalRoute.front ();
-        ****/
+
         //std::cout << "/* replyDst = */
         ////"<< replyDst << '\n';
         /*
          *この部分は、パケットにyoungdsrヘッダーを追加し、ルート応答パケットを送信します
          */
-         /*****
+
         YoungdsrRoutingHeader youngdsrRoutingHeader;
         youngdsrRoutingHeader.SetNextHeader (protocol);
         youngdsrRoutingHeader.SetMessageType (1);
@@ -772,12 +774,12 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
         Ptr<Packet> newPacket = Create<Packet> ();
         newPacket->AddHeader (youngdsrRoutingHeader);
         youngdsr->ScheduleInitialReply (newPacket, ipv4Address, nextHop, m_ipv4Route);
-        ****/
+
         /*
          * rreq発信元へのルートエントリを作成し、ルートキャッシュに保存します。ルートを逆にする必要もあります
          */
          //std::cout << "finalroute" << '\n';
-         /*****
+
         PrintVector (m_finalRoute);
         if (ReverseRoutes (m_finalRoute))
           {
@@ -788,11 +790,11 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
             if (numberAddress > 0)
               {
                 YoungdsrRouteCacheEntry toSource (
-                  ****/
+
                   /*IP_VECTOR=*/
-                ////m_finalRoute, /*dst=*/
-                    ////                                        dst, /*expire time=*/ ActiveRouteTimeout);
-            /*****    if (youngdsr->IsLinkCache ())
+                m_finalRoute, /*dst=*/
+                                                            dst, /*expire time=*/ ActiveRouteTimeout);
+               if (youngdsr->IsLinkCache ())
                   {
                     addRoute = youngdsr->AddRoute_Link (m_finalRoute, ipv4Address);
                   }
@@ -808,11 +810,11 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
               }
 
             if (addRoute)
-              {****/
+              {
                 /*
                  * dstへのルートを見つけ、ソースルートオプションヘッダーを構築します
                  */
-              /*****  YoungdsrOptionSRHeader sourceRoute;
+             YoungdsrOptionSRHeader sourceRoute;
                 NS_LOG_DEBUG ("The route length " << m_finalRoute.size ());
                 sourceRoute.SetNodesAddress (m_finalRoute);
 
@@ -835,17 +837,17 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
                     return 0;
                   }
                 SetRoute (nextHop, ipv4Address);
-                ****/
+
                 /*
                  * 送信バッファからデータパケットを送信します
                  */
                 // std::cout <<"nexthop = " << nextHop << '\n';
-              ////  youngdsr->SendPacketFromBuffer (sourceRoute, nextHop, protocol);
+             youngdsr->SendPacketFromBuffer (sourceRoute, nextHop, protocol);
                 // //データパケットを送信した後、宛先のルート要求タイマーをキャンセルします
-              ////  youngdsr->CancelRreqTimer (dst, true);
+                youngdsr->CancelRreqTimer (dst, true);
 
               //  std::cout << "/* ipv4Address */" << ipv4Address << '\n';
-              /*****
+
               }
             else
               {
@@ -863,7 +865,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
 
         return rreq.GetSerializedSize ();
       }
-      *****/
+
       //通常のルーティングにおけるRREP
       if (targetAddress == ipv4Address)
         {

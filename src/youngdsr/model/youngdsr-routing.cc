@@ -83,8 +83,10 @@ u_int32_t m_malicious2 = 8;
 u_int32_t m_malicious3 = 9;
 u_int32_t mfailed = 0;
 u_int32_t failedR = 0;
-
-std::ofstream outputfile(fname);
+/*
+#define fname "nnumber.txt"
+std::ofstream outputfile2(fname);
+*/
 
 namespace ns3 {
 
@@ -1604,7 +1606,7 @@ YoungdsrRouting::AddAckReqHeader (Ptr<Packet>& packet, Ipv4Address nextHop)
   uint8_t buf[2];
   tmpP->CopyData (buf, sizeof(buf));
   uint8_t numberAddress = (buf[1] - 2) / 4;
-  outputfile << numberAddress <<  "\n" ;
+//  outputfile2 <<" numberaddress "<< numberAddress <<  "\n" ;
 
   YoungdsrOptionSRHeader sourceRoute;
   sourceRoute.SetNumberAddress (numberAddress);
