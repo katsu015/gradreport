@@ -727,7 +727,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
             m_finalRoute.push_back (targetAddress);  // 出発地から目的地までの完全なルートを取得する
 
 
-            outputfile << "/finalroute/" << '\n';
+            outputfile << "/finalroute/　idはipv4addressの末尾から-1した数" << '\n';
             for (std::vector<Ipv4Address>::iterator i = m_finalRoute.begin (); i != m_finalRoute.end (); ++i)
               {
                 outputfile << *i << '\n';

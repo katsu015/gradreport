@@ -58,6 +58,8 @@
 #include "dsr-rcache.h"
 
 u_int8_t ackcount;
+#define fname "route.txt"
+std::ofstream outputfile(fname);
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("DsrOptions");
@@ -495,7 +497,7 @@ uint8_t DsrOptionRreq::GetOptionNumber () const
 
 uint8_t DsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> dsrP, Ipv4Address ipv4Address, Ipv4Address source, Ipv4Header const& ipv4Header, uint8_t protocol, bool& isPromisc, Ipv4Address promiscSource)
 {
-  u_int8_t malicious = 6;
+  ///u_int8_t malicious = 6;
 
   NS_LOG_FUNCTION (this << packet << dsrP << ipv4Address << source << ipv4Header <<
      (uint32_t)protocol << isPromisc);
@@ -515,12 +517,13 @@ uint8_t DsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> dsrP, Ipv4Addres
    * Get the node associated with the ipv4 address and get several objects from the node and leave for further use
    */
    //ブラックホール攻撃
-   if (malicious == GetIDfromIP (ipv4Address))
+
+
+  /**** if (malicious == GetIDfromIP (ipv4Address))
    {
      NS_LOG_DEBUG ("im malicious node ! Discard the packet ");
      m_dropTrace (packet);
-   }
-
+   }*****/
   Ptr<Node> node = GetNodeWithAddress (ipv4Address);
   Ptr<dsr::DsrRouting> dsr = node->GetObject<dsr::DsrRouting> ();
 
@@ -659,6 +662,12 @@ uint8_t DsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> dsrP, Ipv4Addres
                 {
                   m_finalRoute.push_back (*i);  // Get the full route from source to destination
                 }
+                outputfile << "/finalroute/ idはipv4addressの末尾から-1した数" << '\n';
+                for (std::vector<Ipv4Address>::iterator i = m_finalRoute.begin (); i != m_finalRoute.end (); ++i)
+                  {
+
+                    outputfile << *i << '\n';
+                  }
               PrintVector (m_finalRoute);
               nextHop = ReverseSearchNextHop (ipv4Address, m_finalRoute); // get the next hop
             }

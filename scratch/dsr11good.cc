@@ -131,7 +131,8 @@ LogComponentEnable ("YoungdsrNetworkQueue", LOG_LEVEL_ALL);
   cmd.AddValue ("rtslimit", "RTS/CTS Threshold (bytes)", rtslimit);
   cmd.Parse (argc, argv);
 
-  SeedManager::SetSeed (3);
+
+  SeedManager::SetSeed (7);
   SeedManager::SetRun (5);
 
   NodeContainer adhocNodes;
