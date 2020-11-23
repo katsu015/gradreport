@@ -701,7 +701,7 @@ uint8_t YoungdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, 
 */
 
             m_finalRoute.clear ();              // 明確なルートベクトルを取得する
-
+            std::cout << "現在のノードは　" << ipv4Address << '\n';
             /*
             std::cout << "Mノード：偽ルートを作成" << '\n';
             std::cout << "ソースノードは　" << mainVector[0] << '\n';
@@ -1697,7 +1697,7 @@ uint8_t YoungdsrOptionSR::Process (Ptr<Packet> packet, Ptr<Packet> youngdsrP, Ip
        * 次ホップアドレスのベクターを検索します
        */
       Ipv4Address nextHop = SearchNextHop (ipv4Address, nodeList);
-    //  std::cout << "次ホップのアドレス = " << nextHop << '\n';
+     std::cout << "次ホップのアドレス = " << nextHop << '\n';
       PrintVector (nodeList);
 
       if (nextHop == "0.0.0.0")

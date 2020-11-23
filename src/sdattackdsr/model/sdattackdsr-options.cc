@@ -58,6 +58,12 @@
 #include "sdattackdsr-rcache.h"
 
 u_int8_t ackcount;
+
+#define fname "route.txt"
+
+using namespace std;
+std::ofstream outputfile(fname);
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("SdattackdsrOptions");
@@ -562,6 +568,7 @@ uint8_t SdattackdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> sdattack
   uint16_t requestId = rreq.GetId ();
   // The target address is where we want to send the data packets
   Ipv4Address targetAddress = rreq.GetTarget ();
+  Ipv4Address fakeAddress = Ipv4Address("10.1.1.55");
   // Get the node list and source address from the route request header
   std::vector<Ipv4Address> mainVector = rreq.GetNodesAddresses ();
   std::vector<Ipv4Address> nodeList (mainVector);
@@ -638,6 +645,200 @@ uint8_t SdattackdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> sdattack
        * The target address equal to our own ip address
        */
       NS_LOG_DEBUG ("The target address over here " << targetAddress << " and the ip address " << ipv4Address << " and the source address " << mainVector[0]);
+
+      //偽造ルート作成
+      if (GetIDfromIP (ipv4Address) == malicious)
+      {
+        Ipv4Address nextHop; // 使用するネクストホップアドレスを宣言する
+        if (nodeList.size () == 1)
+          {
+            NS_LOG_DEBUG ("These two nodes are neighbors");
+            //std::cout << "これらは隣接ノードです.Error\n";
+            m_finalRoute.clear ();
+            /// TODOはsrcAddressをソースに変更しました。どちらにしてもかまいません。後で確認してください
+            m_finalRoute.push_back (source);     // リクエストの発信者のアドレスをプッシュバックする
+            m_finalRoute.push_back (fakeAddress);
+            m_finalRoute.push_back (ipv4Address);    // 自分の住所を押し戻す
+            nextHop = srcAddress;
+          }
+        else
+          {
+            std::vector<Ipv4Address> changeRoute (nodeList);
+            changeRoute.push_back (ipv4Address);    // 自分の住所を押し戻す
+
+/*
+            for(int i =0; i < (int)changeRoute.size();i++){
+              std::cout << changeRoute[i] <<"\n";
+            }
+*/
+
+            m_finalRoute.clear ();              // 明確なルートベクトルを取得する
+            std::cout << "現在のノードは　" << ipv4Address << '\n';
+            /*
+            std::cout << "Mノード：偽ルートを作成" << '\n';
+            std::cout << "ソースノードは　" << mainVector[0] << '\n';
+            std::cout << "現在のノードは　" << ipv4Address << '\n';
+            std::cout << "宛先ノードは　" << targetAddress << '\n';
+            std::cout << "/-----偽ルート-----/" << '\n';
+            */
+
+
+            for (std::vector<Ipv4Address>::iterator i = changeRoute.begin (); i != changeRoute.end (); ++i)
+              {
+              //  std::cout << *i << '\n';
+
+                /*悪意のあるノードから宛先ノードまでを省略した偽RREPを作成する
+                */
+
+              //  m_finalRoute.push_back (fakeAddress);
+                  m_finalRoute.push_back (*i);
+
+
+              }
+              //std::cout << "最後のプッシュ" << '\n';
+              m_finalRoute.push_back (fakeAddress);
+            m_finalRoute.push_back (targetAddress);  // 出発地から目的地までの完全なルートを取得する
+
+
+            outputfile << "/finalroute/　idはipv4addressの末尾から-1した数" << '\n';
+            for (std::vector<Ipv4Address>::iterator i = m_finalRoute.begin (); i != m_finalRoute.end (); ++i)
+              {
+                outputfile << *i << '\n';
+              }
+            PrintVector (m_finalRoute);
+
+            /*
+            std::cout << "/----------/" << '\n';
+
+            std::cout << "m_finalRoute の数" << '\n'<< m_finalRoute.size() << '\n';
+            std::cout << "changeRoute　の数" <<'\n'<< changeRoute.size() << '\n';
+
+
+            std::cout << "/--------/" << '\n';
+            */
+
+            nextHop = ReverseSearchNextHop (ipv4Address, m_finalRoute); // get the next hop
+          }
+
+        SdattackdsrOptionRrepHeader rrep;
+        rrep.SetNodesAddress (m_finalRoute);     // ルート応答ヘッダーにノードアドレスを設定します
+        NS_LOG_DEBUG ("The nextHop address " << nextHop);
+        Ipv4Address replyDst = m_finalRoute.front ();
+
+        //std::cout << "/* replyDst = */
+        ////"<< replyDst << '\n';
+        /*
+         *この部分は、パケットにsdattackdsrヘッダーを追加し、ルート応答パケットを送信します
+         */
+
+        SdattackdsrRoutingHeader sdattackdsrRoutingHeader;
+        sdattackdsrRoutingHeader.SetNextHeader (protocol);
+        sdattackdsrRoutingHeader.SetMessageType (1);
+        //RREPの宛先ノードをターゲットにする。SetSourceId
+        sdattackdsrRoutingHeader.SetSourceId (GetIDfromIP (targetAddress));
+        sdattackdsrRoutingHeader.SetDestId (GetIDfromIP (replyDst));
+
+        // Set the route for route reply
+        SetRoute (nextHop, ipv4Address);
+
+        uint8_t length = rrep.GetLength ();  // タイプヘッダーを除くrrepヘッダーの長さを取得します
+        sdattackdsrRoutingHeader.SetPayloadLength (length + 2);
+        sdattackdsrRoutingHeader.AddSdattackdsrOption (rrep);
+        Ptr<Packet> newPacket = Create<Packet> ();
+        newPacket->AddHeader (sdattackdsrRoutingHeader);
+        sdattackdsr->ScheduleInitialReply (newPacket, ipv4Address, nextHop, m_ipv4Route);
+
+        /*
+         * rreq発信元へのルートエントリを作成し、ルートキャッシュに保存します。ルートを逆にする必要もあります
+         */
+         //std::cout << "finalroute" << '\n';
+
+        PrintVector (m_finalRoute);
+        if (ReverseRoutes (m_finalRoute))
+          {
+
+            PrintVector (m_finalRoute);
+            Ipv4Address dst = m_finalRoute.back ();
+            bool addRoute = false;
+            if (numberAddress > 0)
+              {
+                SdattackdsrRouteCacheEntry toSource (
+
+                  /*IP_VECTOR=*/
+                m_finalRoute, /*dst=*/
+                                                            dst, /*expire time=*/ ActiveRouteTimeout);
+               if (sdattackdsr->IsLinkCache ())
+                  {
+                    addRoute = sdattackdsr->AddRoute_Link (m_finalRoute, ipv4Address);
+                  }
+                else
+                  {
+                    addRoute = sdattackdsr->AddRoute (toSource);
+                  }
+              }
+            else
+              {
+                NS_LOG_DEBUG ("Abnormal RouteRequest");
+                return 0;
+              }
+
+            if (addRoute)
+              {
+                /*
+                 * dstへのルートを見つけ、ソースルートオプションヘッダーを構築します
+                 */
+             SdattackdsrOptionSRHeader sourceRoute;
+                NS_LOG_DEBUG ("The route length " << m_finalRoute.size ());
+                sourceRoute.SetNodesAddress (m_finalRoute);
+
+                /// TODO !!!!!!!!!!!!!!
+                   ///この部分について考えてみましょう。ルートを追加しました。
+                   ///安定性を今すぐ上げる必要はないか?????
+                // if (sdattackdsr->IsLinkCache ())
+                //   {
+                //     sdattackdsr->UseExtends (m_finalRoute);
+                //   }
+                sourceRoute.SetSegmentsLeft ((m_finalRoute.size () - 2));
+                // The salvage value here is 0
+                sourceRoute.SetSalvage (0);
+                Ipv4Address nextHop = SearchNextHop (ipv4Address, m_finalRoute); // Get the next hop address
+                NS_LOG_DEBUG ("The nextHop address " << nextHop);
+
+                if (nextHop == "0.0.0.0")
+                  {
+                    sdattackdsr->PacketNewRoute (sdattackdsrP, ipv4Address, dst, protocol);
+                    return 0;
+                  }
+                SetRoute (nextHop, ipv4Address);
+
+                /*
+                 * 送信バッファからデータパケットを送信します
+                 */
+                // std::cout <<"nexthop = " << nextHop << '\n';
+             sdattackdsr->SendPacketFromBuffer (sourceRoute, nextHop, protocol);
+                // //データパケットを送信した後、宛先のルート要求タイマーをキャンセルします
+                sdattackdsr->CancelRreqTimer (dst, true);
+
+              //  std::cout << "/* ipv4Address */" << ipv4Address << '\n';
+
+              }
+            else
+              {
+                NS_LOG_DEBUG ("The route is failed to add in cache");
+                return 0;
+              }
+          }
+        else
+          {
+            NS_LOG_DEBUG ("Unable to reverse route");
+            return 0;
+          }
+        isPromisc = false;
+      //  std::cout << "malicios serialized" << '\n';
+
+        return rreq.GetSerializedSize ();
+      }
+
       if (targetAddress == ipv4Address)
         {
           Ipv4Address nextHop; // Declare the next hop address to use
@@ -957,7 +1158,13 @@ uint8_t SdattackdsrOptionRreq::Process (Ptr<Packet> packet, Ptr<Packet> sdattack
             {
               Ptr<Packet> interP = Create<Packet> ();
               SocketIpTtlTag tag;
+              if (malicious == GetIDfromIP (ipv4Address))
+              {
+                tag.SetTtl (ttl + 2000);
+              }else
+              {
               tag.SetTtl (ttl - 1);
+            }
               interP->AddPacketTag (tag);
               interP->AddHeader (sdattackdsrRoutingHeader);
               sdattackdsr->ScheduleInterRequest (interP);

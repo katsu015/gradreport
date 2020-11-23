@@ -157,6 +157,8 @@ u_int32_t RTScount3 = 0;
 u_int32_t CTScount3 = 0;
 u_int32_t RTScount4 = 0;
 u_int32_t RTScount5 = 0;
+u_int32_t RTScount6 = 0;
+u_int32_t CTScount6 = 0;
 /* static */
 TypeId
 MacLow::GetTypeId (void)
@@ -1645,6 +1647,14 @@ MacLow::SendRtsForPacket (void)
     RTScount5++;
   //  std::cout << RTScount3 << '\n';
   outputfile << RTScount5 <<"\n";
+//outputfile.close();
+  }
+  if ("00:00:00:00:00:33" == m_currentHdr.GetAddr1 ()) {
+    //std::cout << "countRTS:id:7" << '\n';
+    outputfile << "\ncountRTS:id:null-sda from "<< m_self << " at "<< Simulator::Now ().GetMicroSeconds () <<"\n";
+    RTScount6++;
+  //  std::cout << RTScount3 << '\n';
+  outputfile << RTScount6 <<"\n";
 //outputfile.close();
   }
   NS_LOG_FUNCTION (this);

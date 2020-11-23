@@ -76,6 +76,11 @@
 #include "sdattackdsr-fs-header.h"
 #include "sdattackdsr-options.h"
 
+#define fname "romn.txt"
+
+
+using namespace std;
+std::ofstream outputfile2(fname);
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("SdattackdsrRouting");
@@ -435,11 +440,14 @@ void SdattackdsrRouting::Start ()
       NS_ASSERT_MSG (result_i.second, "Error in creating queues");
     }
   Ptr<sdattackdsr::SdattackdsrRreqTable> rreqTable = CreateObject<sdattackdsr::SdattackdsrRreqTable> ();
+  outputfile2 <<"m_discoveryHopLimit "<< m_discoveryHopLimit <<  "\n" ;
   // Set the initial hop limit
   rreqTable->SetInitHopLimit (m_discoveryHopLimit);
+
   // Configure the request table parameters
   rreqTable->SetRreqTableSize (m_requestTableSize);
   rreqTable->SetRreqIdSize (m_requestTableIds);
+  outputfile2 << "m_requestTableIds " << (uint32_t)m_requestTableIds << '\n';
   rreqTable->SetUniqueRreqIdSize (m_maxRreqId);
   SetRequestTable (rreqTable);
   // Set the passive buffer parameters using just the send buffer parameters

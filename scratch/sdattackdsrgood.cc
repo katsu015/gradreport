@@ -109,7 +109,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("pauseTime", "pauseTime for mobility model, Default: 0", pauseTime);
   cmd.Parse (argc, argv);
 
-  SeedManager::SetSeed (10);
+  SeedManager::SetSeed (9);
   SeedManager::SetRun (5);
 
   NodeContainer adhocNodes;
