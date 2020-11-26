@@ -59,7 +59,7 @@
 
 u_int8_t ackcount;
 
-#define fname "route.txt"
+#define fname "sdroute.txt"
 
 using namespace std;
 std::ofstream outputfile(fname);

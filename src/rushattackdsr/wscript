@@ -1,0 +1,50 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('rushattackdsr', ['internet', 'wifi'])
+    module.includes = '.'
+    module.source = [
+        'model/rushattackdsr-routing.cc',
+        'model/rushattackdsr-options.cc',
+        'model/rushattackdsr-fs-header.cc',
+        'model/rushattackdsr-option-header.cc',
+        'model/rushattackdsr-maintain-buff.cc',
+        'model/rushattackdsr-passive-buff.cc',
+        'model/rushattackdsr-rsendbuff.cc',
+        'model/rushattackdsr-rcache.cc',
+        'model/rushattackdsr-rreq-table.cc',
+        'model/rushattackdsr-gratuitous-reply-table.cc',
+        'model/rushattackdsr-errorbuff.cc',
+        'model/rushattackdsr-network-queue.cc',
+        'helper/rushattackdsr-helper.cc',
+        'helper/rushattackdsr-main-helper.cc',
+        ]
+        
+    module_test = bld.create_ns3_module_test_library('rushattackdsr')
+    module_test.source = [
+        'test/rushattackdsr-test-suite.cc',
+        ]
+        
+    headers = bld(features='ns3header')
+    headers.module = 'rushattackdsr'
+    headers.source = [
+        'model/rushattackdsr-routing.h',
+        'model/rushattackdsr-options.h',
+        'model/rushattackdsr-fs-header.h',
+        'model/rushattackdsr-option-header.h',
+        'model/rushattackdsr-maintain-buff.h',
+        'model/rushattackdsr-passive-buff.h',
+        'model/rushattackdsr-rsendbuff.h',
+        'model/rushattackdsr-rcache.h',
+        'model/rushattackdsr-rreq-table.h',
+        'model/rushattackdsr-gratuitous-reply-table.h',
+        'model/rushattackdsr-errorbuff.h',
+        'model/rushattackdsr-network-queue.h',
+        'helper/rushattackdsr-helper.h',
+        'helper/rushattackdsr-main-helper.h',
+        ]
+
+    if (bld.env['ENABLE_EXAMPLES']):
+      bld.recurse('examples')
+
+    bld.ns3_python_bindings()
